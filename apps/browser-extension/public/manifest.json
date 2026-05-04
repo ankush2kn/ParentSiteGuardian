@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Parent Site Guardian",
+  "version": "0.1.0",
+  "description": "Local site time limits — tracks usage and enforces daily caps via Parent Site Guardian.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Parent Site Guardian"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage", "tabs", "windows", "webNavigation"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

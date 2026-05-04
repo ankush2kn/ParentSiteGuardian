@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parent Site Guardian — time limit</title>
+    <link rel="stylesheet" href="blocked.css" />
+  </head>
+  <body>
+    <div class="backdrop" aria-hidden="true"></div>
+    <main class="card" role="main">
+      <header class="card-head">
+        <p class="badge">Parent Site Guardian</p>
+        <h1>Daily limit reached</h1>
+        <p class="group-name" id="groupName">—</p>
+      </header>
+
+      <section class="stats" aria-label="Usage today">
+        <div class="stat">
+          <span class="stat-label">Used today</span>
+          <strong class="stat-value" id="usedDisplay">—</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Daily limit</span>
+          <strong class="stat-value" id="limitDisplay">—</strong>
+        </div>
+        <div class="stat stat-wide">
+          <span class="stat-label">Budget resets</span>
+          <strong class="stat-value" id="resetDisplay">—</strong>
+        </div>
+      </section>
+
+      <p class="reason" id="reasonLine"></p>
+
+      <section class="override" aria-labelledby="override-heading">
+        <h2 id="override-heading">Parent override</h2>
+        <p class="override-lede">Enter the parent PIN and choose extra time. The page will reload when time is granted.</p>
+        <form id="overrideForm" autocomplete="off">
+          <label class="field">
+            <span class="field-label">PIN</span>
+            <input
+              id="pinInput"
+              name="pin"
+              type="password"
+              inputmode="numeric"
+              maxlength="72"
+              required
+              autocomplete="new-password"
+            />
+          </label>
+          <fieldset class="minutes">
+            <legend class="field-label">Extra time</legend>
+            <div class="minute-grid" id="minuteChoices"></div>
+          </fieldset>
+          <p class="form-error" id="formError" role="alert" hidden></p>
+          <button type="submit" class="primary" id="submitBtn">Grant time &amp; continue</button>
+        </form>
+      </section>
+
+      <p class="footnote" id="originalHost"></p>
+    </main>
+    <script src="blocked.js"></script>
+  </body>
+</html>

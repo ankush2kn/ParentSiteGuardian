@@ -1,0 +1,111 @@
+:root {
+  font-family: system-ui, Segoe UI, sans-serif;
+  color: #0f172a;
+}
+
+body {
+  margin: 0;
+  min-width: 300px;
+}
+
+.shell {
+  padding: 12px 14px 14px;
+}
+
+h1 {
+  font-size: 1rem;
+  margin: 0 0 10px;
+  font-weight: 650;
+}
+
+h2 {
+  font-size: 0.8125rem;
+  margin: 14px 0 8px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.warn {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+
+.warn.hidden {
+  display: none;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 0.8125rem;
+  margin-bottom: 6px;
+}
+
+.label {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.value {
+  text-align: right;
+  word-break: break-all;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.ok {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.bad {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.usage-body {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.usage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.usage-table th,
+.usage-table td {
+  text-align: left;
+  padding: 4px 6px 4px 0;
+  vertical-align: top;
+}
+
+.usage-table th {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.usage-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.muted {
+  color: #94a3b8;
+}

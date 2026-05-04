@@ -1,0 +1,24 @@
+{
+  "name": "parent-site-guardian",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Parent Site Guardian — local Windows parental-control MVP (monorepo)",
+  "workspaces": [
+    "apps/admin-ui",
+    "apps/browser-extension"
+  ],
+  "scripts": {
+    "dev:service": "node scripts/dotnet-cli.cjs run --project ./apps/parent-site-guardian-service",
+    "dev:admin": "npm run dev -w admin-ui",
+    "dev:extension": "npm run dev -w parent-site-guardian-extension",
+    "build:service": "node scripts/dotnet-cli.cjs build ./apps/parent-site-guardian-service -c Release",
+    "build:admin": "npm run build -w admin-ui",
+    "build:extension": "npm run build -w parent-site-guardian-extension",
+    "db:update": "dotnet ef database update --project apps/parent-site-guardian-service/ParentSiteGuardian.Service.csproj --configuration Release",
+    "test:e2e:extension": "npm run test:e2e -w parent-site-guardian-extension",
+    "build": "npm run build:service && npm run build:admin && npm run build:extension"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parent Site Guardian</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <h1>Parent Site Guardian</h1>
+      <section id="warn" class="warn hidden" role="status"></section>
+      <section class="row">
+        <span class="label">Service</span>
+        <span id="svc-status" class="value">…</span>
+      </section>
+      <section class="row">
+        <span class="label">Endpoint</span>
+        <span id="svc-endpoint" class="value mono">…</span>
+      </section>
+      <section class="usage">
+        <h2>Today (remaining)</h2>
+        <div id="usage-body" class="usage-body">Loading…</div>
+      </section>
+    </main>
+    <script src="popup.js" defer></script>
+  </body>
+</html>

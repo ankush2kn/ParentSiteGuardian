@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+apps/*/dist/
+apps/admin-ui/dist/
+apps/browser-extension/dist/
+
+# Local build staging
+_build_out/
+
+# .NET
+apps/parent-site-guardian-service/**/bin/
+apps/parent-site-guardian-service/**/obj/
+apps/parent-site-guardian-service/parent-site-guardian-design.db
+*.user
+*.suo
+
+# IDE / OS
+.idea/
+.vs/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs / env
+*.log
+.env
+.env.*.local
+
+# Vite
+*.local
+
+# Test / coverage
+coverage/
+apps/browser-extension/test-results/
+apps/browser-extension/playwright-report/
