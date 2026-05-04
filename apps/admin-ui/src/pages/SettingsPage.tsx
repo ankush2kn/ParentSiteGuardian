@@ -1,9 +1,12 @@
-import { useCallback, useState } from 'react'
-import { changePin, setupPin } from '@/lib/api'
+import { useCallback, useEffect, useState } from 'react'
+import { changePin, fetchEffectiveConfig, setupPin } from '@/lib/api'
+import type { EffectiveConfigResponse } from '@/lib/types'
 import { useAppState } from '@/context/appStateContext'
 
 export function SettingsPage() {
   const { bootstrap, bootstrapError, reloadBootstrap, clearPinSession, selectedDevice } = useAppState()
+  const [effective, setEffective] = useState<EffectiveConfigResponse | null>(null)
+  const [effectiveError, setEffectiveError] = useState<string | null>(null)
   const [setupPinValue, setSetupPinValue] = useState('')
   const [setupConfirm, setSetupConfirm] = useState('')
   const [currentPin, setCurrentPin] = useState('')
@@ -11,6 +14,31 @@ export function SettingsPage() {
   const [newPin2, setNewPin2] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (bootstrapError) return
+    let cancelled = false
+    const id = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const data = await fetchEffectiveConfig()
+          if (!cancelled) {
+            setEffective(data)
+            setEffectiveError(null)
+          }
+        } catch {
+          if (!cancelled) {
+            setEffective(null)
+            setEffectiveError('Could not load this machine’s identity from the service.')
+          }
+        }
+      })()
+    }, 0)
+    return () => {
+      cancelled = true
+      window.clearTimeout(id)
+    }
+  }, [bootstrapError])
 
   const onSetup = async () => {
     setError(null)
@@ -68,16 +96,29 @@ export function SettingsPage() {
     }
   }, [selectedDevice])
 
+  const copyAppDeviceId = useCallback(async () => {
+    if (!effective?.localDevice.appDeviceId) return
+    try {
+      await navigator.clipboard.writeText(effective.localDevice.appDeviceId)
+      setMessage('App device ID copied.')
+      setError(null)
+    } catch {
+      setError('Clipboard not available.')
+    }
+  }, [effective])
+
   if (bootstrapError) {
     return <p className="page-lead muted">Connect the service to change settings.</p>
   }
 
   const pinConfigured = bootstrap?.pinConfigured ?? false
+  const ld = effective?.localDevice
+  const fp = ld?.machineFingerprint
 
   return (
     <div>
       <h1 className="page-title">Settings</h1>
-      <p className="page-lead">Parent PIN and device identity for this machine.</p>
+      <p className="page-lead">Parent PIN, this installation’s identity, and the profile device from the database.</p>
 
       {message ? (
         <p className="banner ok" role="status">
@@ -91,7 +132,93 @@ export function SettingsPage() {
       ) : null}
 
       <section className="card">
-        <h2 className="card-title">Device</h2>
+        <h2 className="card-title">This machine (guardian service)</h2>
+        <p className="muted small-gap">
+          Stable ID is assigned on first run and stored in SQLite. It is not derived from MAC addresses.
+        </p>
+        {effectiveError ? <p className="field-error">{effectiveError}</p> : null}
+        {ld ? (
+          <>
+            <p className="mono wrap">
+              <strong>App device ID:</strong> {ld.appDeviceId}
+            </p>
+            <button type="button" className="btn secondary small-gap" onClick={() => void copyAppDeviceId()}>
+              Copy app device ID
+            </button>
+            {effective ? (
+              <p className="muted small-gap">
+                Extension tick interval (same as <code>GET /api/extension-config</code>):{' '}
+                {effective.extension.usageTickIntervalSeconds}s
+              </p>
+            ) : null}
+            {(ld.windowsUsername || ld.windowsUserSid) && (
+              <dl className="kv">
+                {ld.windowsUsername ? (
+                  <>
+                    <dt>Windows user</dt>
+                    <dd className="mono wrap">{ld.windowsUsername}</dd>
+                  </>
+                ) : null}
+                {ld.windowsUserSid ? (
+                  <>
+                    <dt>Windows user SID</dt>
+                    <dd className="mono wrap">{ld.windowsUserSid}</dd>
+                  </>
+                ) : null}
+              </dl>
+            )}
+            {fp ? (
+              <>
+                <h3 className="subheading">Machine fingerprint</h3>
+                <dl className="kv">
+                  <dt>Machine name</dt>
+                  <dd>{fp.machineName}</dd>
+                  <dt>OS</dt>
+                  <dd className="wrap">{fp.osDescription}</dd>
+                  <dt>Architecture</dt>
+                  <dd>
+                    {fp.osArchitecture} / process: {fp.processArchitecture}
+                  </dd>
+                  <dt>Processors</dt>
+                  <dd>{fp.processorCount}</dd>
+                  <dt>Runtime</dt>
+                  <dd className="wrap">{fp.frameworkDescription}</dd>
+                  <dt>System directory</dt>
+                  <dd className="mono wrap">{fp.systemDirectory}</dd>
+                  <dt>Time zone</dt>
+                  <dd>{fp.localTimeZoneId}</dd>
+                  <dt>Captured (UTC)</dt>
+                  <dd className="mono">{fp.capturedAtUtc}</dd>
+                </dl>
+              </>
+            ) : null}
+            {ld.optionalNetworkLabels.length > 0 ? (
+              <>
+                <h3 className="subheading">Optional network labels (not used as ID)</h3>
+                <p className="muted small-gap">Physical addresses are shown for context only.</p>
+                <ul className="rule-list">
+                  {ld.optionalNetworkLabels.map((n) => (
+                    <li key={`${n.interfaceName}-${n.physicalAddress}`} className="rule-row">
+                      <span>
+                        <strong>{n.interfaceName}</strong> — {n.description}
+                        <span className="mono"> · {n.physicalAddress}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <p className="muted small-gap">No non-loopback adapters with a physical address were listed.</p>
+            )}
+          </>
+        ) : !effectiveError ? (
+          <p className="muted">Loading…</p>
+        ) : null}
+      </section>
+
+      <section className="card">
+        <h2 className="card-title">Profile device (database)</h2>
+        <p className="muted small-gap">Child profile device used for limits and usage — from seed or your data.</p>
         {selectedDevice ? (
           <>
             <p>
@@ -103,20 +230,20 @@ export function SettingsPage() {
               <dl className="kv">
                 {selectedDevice.machineFingerprint ? (
                   <>
-                    <dt>Machine fingerprint</dt>
+                    <dt>Stored fingerprint (DB)</dt>
                     <dd className="mono wrap">{selectedDevice.machineFingerprint}</dd>
                   </>
                 ) : null}
                 {selectedDevice.windowsUserSid ? (
                   <>
-                    <dt>Windows user SID</dt>
+                    <dt>Stored Windows user SID (DB)</dt>
                     <dd className="mono wrap">{selectedDevice.windowsUserSid}</dd>
                   </>
                 ) : null}
               </dl>
             )}
             <button type="button" className="btn secondary" onClick={() => void copyId()}>
-              Copy device ID
+              Copy profile device ID
             </button>
           </>
         ) : (

@@ -16,6 +16,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminConfigService, AdminConfigService>();
         services.AddScoped<IParentPinService, ParentPinService>();
         services.AddScoped<IAdminOverrideService, AdminOverrideService>();
+        services.AddScoped<ILocalDeviceIdentityService, LocalDeviceIdentityService>();
         return services;
     }
 

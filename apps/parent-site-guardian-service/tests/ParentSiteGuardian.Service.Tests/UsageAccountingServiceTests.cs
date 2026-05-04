@@ -220,6 +220,38 @@ public class UsageAccountingServiceTests
     }
 
     [Fact]
+    public async Task Multiple_ticks_same_local_day_accumulate_in_GetToday_and_Decide()
+    {
+        var (db, path) = await TestAppDbContextFactory.CreateEmptyAsync();
+        try
+        {
+            await new DatabaseSeedService(db).SeedIfNeededAsync();
+            var noonUtc = new DateTimeOffset(2026, 5, 20, 14, 0, 0, TimeSpan.Zero);
+            var time = new FixedGuardianTime(noonUtc, TimeZoneInfo.Utc);
+            var sut = CreateSut(db, time);
+
+            await sut.RecordTickAsync(Tick("https://www.youtube.com/one", 7, noonUtc));
+            await sut.RecordTickAsync(Tick("https://www.youtube.com/two", 13, noonUtc.AddMinutes(1)));
+
+            var today = await sut.GetTodayAsync(WellKnownSeedIds.DefaultDeviceId);
+            var youtube = today!.Groups.Single(g => g.SiteGroupId == WellKnownSeedIds.YouTubeSiteGroupId);
+            Assert.Equal(20, youtube.UsedSeconds);
+
+            var decision = await sut.DecideAsync(new DecisionRequest
+            {
+                DeviceId = WellKnownSeedIds.DefaultDeviceId,
+                Url = "https://www.youtube.com/three",
+            });
+            Assert.NotNull(decision);
+            Assert.Equal(20, decision!.UsedSeconds);
+        }
+        finally
+        {
+            TestAppDbContextFactory.Destroy(db, path);
+        }
+    }
+
+    [Fact]
     public async Task Tick_unknown_device_returns_not_recorded()
     {
         var (db, path) = await TestAppDbContextFactory.CreateEmptyAsync();

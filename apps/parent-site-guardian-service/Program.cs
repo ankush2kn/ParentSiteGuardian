@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ParentSiteGuardian.Service.Api;
 using ParentSiteGuardian.Service.Data;
 using ParentSiteGuardian.Service.Extensions;
+using ParentSiteGuardian.Service.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGuardianPersistence();
@@ -25,6 +26,8 @@ await using (var scope = app.Services.CreateAsyncScope())
     await db.Database.MigrateAsync();
     await seed.EnsureAdminConfigDefaultsAsync();
     await seed.SeedIfNeededAsync();
+    var localDevice = scope.ServiceProvider.GetRequiredService<ILocalDeviceIdentityService>();
+    await localDevice.EnsurePersistAndGetAsync(CancellationToken.None);
 }
 
 app.MapGet("/health", () =>
@@ -39,5 +42,6 @@ app.MapUsageEndpoints();
 app.MapAdminEndpoints();
 app.MapAdminManagementEndpoints();
 app.MapExtensionConfigEndpoints();
+app.MapConfigEndpoints();
 
 app.Run();

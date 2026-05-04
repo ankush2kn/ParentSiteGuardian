@@ -5,6 +5,7 @@ import { AppStateProvider } from '@/providers/AppStateProvider'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { HistoryPage } from '@/pages/HistoryPage'
 import { LimitsPage } from '@/pages/LimitsPage'
+import { HardeningPage } from '@/pages/HardeningPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { SiteGroupsPage } from '@/pages/SiteGroupsPage'
 
@@ -19,6 +20,7 @@ export default function App() {
             <Route path="/limits" element={<LimitsPage />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/hardening" element={<HardeningPage />} />
           </Route>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

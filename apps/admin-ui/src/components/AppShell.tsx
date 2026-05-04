@@ -7,6 +7,7 @@ const nav = [
   { to: '/limits', label: 'Limits' },
   { to: '/history', label: 'History' },
   { to: '/settings', label: 'Settings' },
+  { to: '/hardening', label: 'Windows hardening' },
 ] as const
 
 export function AppShell() {

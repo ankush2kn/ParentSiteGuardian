@@ -71,3 +71,39 @@ export type DailyLimitRow = {
   limitSeconds: number
   createdAt: string
 }
+
+export type ExtensionConfigPayload = {
+  usageTickIntervalSeconds: number
+}
+
+export type OptionalNetworkLabel = {
+  interfaceName: string
+  description: string
+  physicalAddress: string
+}
+
+export type MachineFingerprint = {
+  machineName: string
+  osDescription: string
+  osArchitecture: string
+  processArchitecture: string
+  processorCount: number
+  frameworkDescription: string
+  systemDirectory: string
+  userInteractive: boolean
+  localTimeZoneId: string
+  capturedAtUtc: string
+}
+
+export type LocalDeviceIdentity = {
+  appDeviceId: string
+  machineFingerprint: MachineFingerprint
+  windowsUsername: string | null
+  windowsUserSid: string | null
+  optionalNetworkLabels: OptionalNetworkLabel[]
+}
+
+export type EffectiveConfigResponse = {
+  extension: ExtensionConfigPayload
+  localDevice: LocalDeviceIdentity
+}

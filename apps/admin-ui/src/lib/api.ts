@@ -3,6 +3,7 @@ import type {
   AdminBootstrapResponse,
   AdminSiteGroupsResponse,
   DailyLimitRow,
+  EffectiveConfigResponse,
   TodayUsageResponse,
   UsageHistoryResponse,
 } from '@/lib/types'
@@ -29,6 +30,12 @@ export async function fetchBootstrap(): Promise<AdminBootstrapResponse> {
   const res = await fetch(apiUrl('/api/admin/bootstrap'))
   if (!res.ok) throw new ApiError('Failed to load devices', res.status, await res.text())
   return parseJson<AdminBootstrapResponse>(res)
+}
+
+export async function fetchEffectiveConfig(): Promise<EffectiveConfigResponse> {
+  const res = await fetch(apiUrl('/api/config/effective'))
+  if (!res.ok) throw new ApiError('Failed to load effective config', res.status, await res.text())
+  return parseJson<EffectiveConfigResponse>(res)
 }
 
 export async function fetchTodayUsage(deviceId: string): Promise<TodayUsageResponse> {
