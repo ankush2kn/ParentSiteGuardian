@@ -155,6 +155,31 @@ npm run build
 - Admin UI static files: `apps/admin-ui/dist/`
 - Extension: `apps/browser-extension/dist/`
 
+### Windows laptop install (Phase 1)
+
+For publishing the API to `dist/install/`, scheduled task or Windows Service registration, Chrome/Edge unpacked load steps, and SQLite backup/reset — all **without cloud accounts** — see **[docs/windows-phase1-install.md](docs/windows-phase1-install.md)** and the PowerShell scripts in **`scripts/windows/`**.
+
+### Build the Windows installer (.exe)
+
+Use this on your **development machine** (not on end-user PCs). You already need **.NET 10 SDK**, **Node.js 20+**, and **`npm install`** from the repo root.
+
+1. Install **[Inno Setup 6](https://jrsoftware.org/isdl.php)** (free). The build script looks for `ISCC.exe` under `Program Files` or `Program Files (x86)`.
+2. From the **repository root**, run:
+
+```powershell
+npm run build:installer
+```
+
+This builds the self-contained service (`win-x64`), production admin UI + extension, stages everything under **`installer/staging/`**, and compiles **`dist/installer/ParentSiteGuardian-Setup-0.1.0.exe`** (version matches **`installer/ParentSiteGuardian.iss`**).
+
+**Alternatives:**
+
+- **`.\scripts\windows\Build-Installer.ps1`** — same as the npm script.
+- **Staging only** (no Inno on PATH): **`npm run build:installer -- -SkipInno`** — populate **`installer/staging`** without producing the `.exe`.
+- **Skip tests** while iterating: append **`-SkipTests`** to the script.
+
+Full options and what the installer deploys: **[installer/README.md](installer/README.md)**.
+
 ## Troubleshooting
 
 ### `'dotnet' is not recognized` (Windows)
@@ -165,7 +190,7 @@ npm run build
 
 ## Next steps
 
-Follow [Parent-Site-Guardian-Phase-1-Cursor-Implementation-Plan.md](Parent-Site-Guardian-Phase-1-Cursor-Implementation-Plan.md) starting at **Sub-Phase 1** (SQLite, seed data, and APIs).
+Follow [docs/Parent-Site-Guardian-Phase-1-Cursor-Implementation-Plan.md](docs/Parent-Site-Guardian-Phase-1-Cursor-Implementation-Plan.md) starting at **Sub-Phase 1** (SQLite, seed data, and APIs).
 
 ## License
 

@@ -30,7 +30,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     } catch {
       setBootstrap(null)
       setBootstrapError(
-        'Could not reach the guardian service. Start it with npm run dev:service (default http://127.0.0.1:5050).',
+        import.meta.env.DEV
+          ? 'Could not reach the guardian service. Start it with npm run dev:service (default http://127.0.0.1:5050).'
+          : 'Could not reach the guardian service at http://127.0.0.1:5050. Confirm the Parent Site Guardian Windows service is running.',
       )
     }
   }, [])

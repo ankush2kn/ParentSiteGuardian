@@ -9,9 +9,11 @@ import { HardeningPage } from '@/pages/HardeningPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { SiteGroupsPage } from '@/pages/SiteGroupsPage'
 
+const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'
+
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={routerBasename}>
       <AppStateProvider>
         <Routes>
           <Route element={<AppShell />}>

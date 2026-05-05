@@ -16,7 +16,8 @@
     "build:extension": "npm run build -w parent-site-guardian-extension",
     "db:update": "dotnet ef database update --project apps/parent-site-guardian-service/ParentSiteGuardian.Service.csproj --configuration Release",
     "test:e2e:extension": "npm run test:e2e -w parent-site-guardian-extension",
-    "build": "npm run build:service && npm run build:admin && npm run build:extension"
+    "build": "npm run build:service && npm run build:admin && npm run build:extension",
+    "build:installer": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/windows/Build-Installer.ps1"
   },
   "engines": {
     "node": ">=20"

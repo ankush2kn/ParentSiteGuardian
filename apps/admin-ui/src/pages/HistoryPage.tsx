@@ -35,10 +35,13 @@ export function HistoryPage() {
     return () => window.clearTimeout(id)
   }, [load])
 
-  const groupColumns = useMemo(() => {
-    const last = data?.days[data.days.length - 1]
-    return last?.groups ?? []
-  }, [data])
+  /** Newest local day first for the table body. */
+  const displayDays = useMemo(
+    () => (data?.days.length ? [...data.days].reverse() : []),
+    [data],
+  )
+
+  const groupColumns = useMemo(() => displayDays[0]?.groups ?? [], [displayDays])
 
   if (bootstrapError) {
     return <p className="page-lead muted">Connect the service to view history.</p>
@@ -56,7 +59,7 @@ export function HistoryPage() {
         </p>
       ) : null}
 
-      {!loading && data && data.days.length > 0 ? (
+      {!loading && data && displayDays.length > 0 ? (
         <div className="table-wrap scroll-x">
           <table className="data-table compact">
             <thead>
@@ -70,7 +73,7 @@ export function HistoryPage() {
               </tr>
             </thead>
             <tbody>
-              {data.days.map((day) => (
+              {displayDays.map((day) => (
                 <tr key={day.localDate}>
                   <td>{day.localDate}</td>
                   {day.groups.map((g) => (

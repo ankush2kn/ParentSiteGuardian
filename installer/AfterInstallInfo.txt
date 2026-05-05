@@ -1,0 +1,20 @@
+Thanks for installing Parent Site Guardian.
+
+Next steps:
+
+1) Admin dashboard
+   Open this address in Chrome or Edge:
+   http://127.0.0.1:5050/admin/
+
+   A Start menu shortcut "Open Admin dashboard" was added under Parent Site Guardian.
+
+2) Browser extension (Chrome or Edge)
+   - Open chrome://extensions or edge://extensions
+   - Enable Developer mode
+   - Load unpacked and choose this folder (adjust if you changed the install location):
+     C:\Program Files\Parent Site Guardian\extension
+
+3) Service
+   The API runs as a Windows service on http://127.0.0.1:5050 (localhost only).
+
+Your settings and parent PIN are stored locally in SQLite under ProgramData (see documentation).

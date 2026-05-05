@@ -9,6 +9,10 @@ apps/browser-extension/dist/
 
 # Local build staging
 _build_out/
+installer/staging/
+
+# Installer output (optional; remove if you want to commit CI artifacts)
+dist/installer/*.exe
 
 # .NET
 apps/parent-site-guardian-service/**/bin/
