@@ -5,6 +5,7 @@ public enum AdminOverrideCreateResult
     Ok,
     PinNotConfigured,
     InvalidPin,
+    PinLockedOut,
     InvalidExtraMinutes,
     UnknownDevice,
     UnknownSiteGroup,

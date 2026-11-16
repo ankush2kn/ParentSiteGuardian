@@ -6,6 +6,7 @@ import {
   deleteSiteGroup,
   deleteSiteRule,
   fetchSiteGroups,
+  pinErrorMessage,
   updateSiteGroup,
 } from '@/lib/api'
 import type { AdminSiteGroup } from '@/lib/types'
@@ -17,7 +18,7 @@ const PATTERN_TYPES = [
 ] as const
 
 export function SiteGroupsPage() {
-  const { deviceId, bootstrapError, pinConfigured, getPinForChanges } = useAppState()
+  const { deviceId, bootstrapError, pinConfigured, getPinForChanges, clearPinSession } = useAppState()
   const [groups, setGroups] = useState<AdminSiteGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -60,8 +61,10 @@ export function SiteGroupsPage() {
       await load()
       setError(null)
     } catch (e) {
-      if (e instanceof ApiError && e.status === 401) {
-        setError('PIN was rejected. Try again from Settings or re-unlock.')
+      const pinMessage = pinErrorMessage(e)
+      if (pinMessage) {
+        clearPinSession()
+        setError(pinMessage)
       } else if (e instanceof ApiError && e.status === 400) {
         setError('Invalid rule pattern or type. Check examples and try again.')
       } else {

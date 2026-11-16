@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ApiError, fetchDailyLimits, fetchSiteGroups, upsertDailyLimit } from '@/lib/api'
+import { fetchDailyLimits, fetchSiteGroups, pinErrorMessage, upsertDailyLimit } from '@/lib/api'
 import { formatDuration, minutesToSeconds, secondsToMinutes } from '@/lib/format'
 import { useAppState } from '@/context/appStateContext'
 
@@ -11,7 +11,7 @@ type RowState = {
 }
 
 export function LimitsPage() {
-  const { deviceId, bootstrapError, pinConfigured, getPinForChanges } = useAppState()
+  const { deviceId, bootstrapError, pinConfigured, getPinForChanges, clearPinSession } = useAppState()
   const [rows, setRows] = useState<RowState[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -84,8 +84,10 @@ export function LimitsPage() {
       window.setTimeout(() => setSaved(null), 2000)
       await load()
     } catch (e) {
-      if (e instanceof ApiError && e.status === 401) {
-        setError('PIN was rejected.')
+      const pinMessage = pinErrorMessage(e)
+      if (pinMessage) {
+        clearPinSession()
+        setError(pinMessage)
       } else {
         setError('Could not save limit.')
       }

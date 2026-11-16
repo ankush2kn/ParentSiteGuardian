@@ -19,11 +19,16 @@ public sealed class AdminOverrideService(
         int extraMinutes,
         CancellationToken cancellationToken = default)
     {
-        if (!await parentPin.IsConfiguredAsync(cancellationToken))
-            return AdminOverrideCreateResult.PinNotConfigured;
-
-        if (!await parentPin.VerifyAsync(pin, cancellationToken))
-            return AdminOverrideCreateResult.InvalidPin;
+        var check = await parentPin.CheckAsync(pin, cancellationToken);
+        switch (check.Status)
+        {
+            case PinCheckStatus.NotConfigured:
+                return AdminOverrideCreateResult.PinNotConfigured;
+            case PinCheckStatus.LockedOut:
+                return AdminOverrideCreateResult.PinLockedOut;
+            case PinCheckStatus.Invalid:
+                return AdminOverrideCreateResult.InvalidPin;
+        }
 
         if (!AllowedMinutes.Contains(extraMinutes))
             return AdminOverrideCreateResult.InvalidExtraMinutes;

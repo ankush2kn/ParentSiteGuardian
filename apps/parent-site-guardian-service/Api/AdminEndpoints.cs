@@ -26,10 +26,17 @@ public static class AdminEndpoints
 
         app.MapPost("/api/admin/pin/verify", async Task<IResult> (PinVerifyRequest body, IParentPinService pins, CancellationToken ct) =>
         {
-            if (!await pins.IsConfiguredAsync(ct))
-                return Results.Ok(new PinVerifyResponse { Valid = false });
-            var valid = await pins.VerifyAsync(body.Pin, ct);
-            return Results.Ok(new PinVerifyResponse { Valid = valid });
+            var check = await pins.CheckAsync(body.Pin, ct);
+            return check.Status switch
+            {
+                PinCheckStatus.Ok => Results.Ok(new PinVerifyResponse { Valid = true }),
+                PinCheckStatus.LockedOut => PinResults.LockedOut(check.RetryAfter),
+                _ => Results.Ok(new PinVerifyResponse
+                {
+                    Valid = false,
+                    RetryAfterSeconds = PinResults.ToSeconds(check.RetryAfter),
+                }),
+            };
         });
 
         app.MapPost("/api/admin/pin/change", async Task<IResult> (PinChangeRequest body, IParentPinService pins, CancellationToken ct) =>
@@ -39,7 +46,8 @@ public static class AdminEndpoints
             {
                 ParentPinChangeResult.Ok => Results.Ok(new { status = "ok" }),
                 ParentPinChangeResult.NotConfigured => Results.Conflict(new { error = "pin_not_configured" }),
-                ParentPinChangeResult.InvalidCurrentPin => Results.Unauthorized(),
+                ParentPinChangeResult.InvalidCurrentPin => PinResults.Invalid(await pins.GetLockoutRemainingAsync(ct)),
+                ParentPinChangeResult.LockedOut => PinResults.LockedOut(await pins.GetLockoutRemainingAsync(ct)),
                 ParentPinChangeResult.InvalidNewPin => Results.BadRequest(new { error = "invalid_new_pin" }),
                 _ => Results.BadRequest(),
             };
@@ -48,6 +56,7 @@ public static class AdminEndpoints
         app.MapPost("/api/admin/overrides", async Task<IResult> (
             AdminOverrideRequest body,
             IAdminOverrideService overrides,
+            IParentPinService pins,
             CancellationToken ct) =>
         {
             var result = await overrides.CreateAsync(body.DeviceId, body.SiteGroupId, body.Pin, body.ExtraMinutes, ct);
@@ -55,7 +64,8 @@ public static class AdminEndpoints
             {
                 AdminOverrideCreateResult.Ok => Results.Ok(new { status = "ok" }),
                 AdminOverrideCreateResult.PinNotConfigured => Results.Conflict(new { error = "pin_not_configured" }),
-                AdminOverrideCreateResult.InvalidPin => Results.Unauthorized(),
+                AdminOverrideCreateResult.InvalidPin => PinResults.Invalid(await pins.GetLockoutRemainingAsync(ct)),
+                AdminOverrideCreateResult.PinLockedOut => PinResults.LockedOut(await pins.GetLockoutRemainingAsync(ct)),
                 AdminOverrideCreateResult.InvalidExtraMinutes => Results.BadRequest(new { error = "invalid_extra_minutes" }),
                 AdminOverrideCreateResult.UnknownDevice => Results.NotFound(new { error = "unknown_device" }),
                 AdminOverrideCreateResult.UnknownSiteGroup => Results.NotFound(new { error = "unknown_site_group" }),

@@ -15,7 +15,7 @@ public class AdminOverrideServiceTests
         try
         {
             await new DatabaseSeedService(db).SeedIfNeededAsync();
-            var pins = new ParentPinService(db);
+            var pins = new ParentPinService(db, new FixedGuardianTime(DateTimeOffset.UtcNow, TimeZoneInfo.Utc));
             await pins.SetupAsync("88888888");
 
             var time = new FixedGuardianTime(new DateTimeOffset(2026, 10, 1, 12, 0, 0, TimeSpan.Zero), TimeZoneInfo.Utc);
@@ -50,7 +50,7 @@ public class AdminOverrideServiceTests
         try
         {
             await new DatabaseSeedService(db).SeedIfNeededAsync();
-            var pins = new ParentPinService(db);
+            var pins = new ParentPinService(db, new FixedGuardianTime(DateTimeOffset.UtcNow, TimeZoneInfo.Utc));
             var time = new FixedGuardianTime(DateTimeOffset.UtcNow, TimeZoneInfo.Utc);
             var sut = new AdminOverrideService(db, pins, time);
 

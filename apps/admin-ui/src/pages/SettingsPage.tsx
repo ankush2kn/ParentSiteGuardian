@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { changePin, fetchEffectiveConfig, setupPin } from '@/lib/api'
+import { changePin, fetchEffectiveConfig, pinErrorMessage, setupPin } from '@/lib/api'
 import type { EffectiveConfigResponse } from '@/lib/types'
 import { useAppState } from '@/context/appStateContext'
 
@@ -80,8 +80,8 @@ export function SettingsPage() {
       setNewPin2('')
       clearPinSession()
       setMessage('PIN updated. Unlock again before making other changes.')
-    } catch {
-      setError('Current PIN was not accepted, or the new PIN was invalid.')
+    } catch (e) {
+      setError(pinErrorMessage(e) ?? 'Current PIN was not accepted, or the new PIN was invalid.')
     }
   }
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { PinUnlockModal } from '@/components/PinUnlockModal'
 import { AppStateContext, type AppStateContextValue } from '@/context/appStateContext'
-import { fetchBootstrap, verifyPin } from '@/lib/api'
+import { fetchBootstrap, formatPinWait, verifyPin } from '@/lib/api'
 import type { AdminBootstrapResponse } from '@/lib/types'
 
 const DEVICE_KEY = 'pg_admin_device_id'
@@ -85,9 +85,23 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const handlePinModalSubmit = useCallback(async (pin: string) => {
     setPinModalError(null)
-    const ok = await verifyPin(pin)
-    if (!ok) {
-      setPinModalError('That PIN is not correct.')
+    let result: Awaited<ReturnType<typeof verifyPin>>
+    try {
+      result = await verifyPin(pin)
+    } catch {
+      setPinModalError('Could not reach the guardian service.')
+      return
+    }
+    if (!result.ok) {
+      if (result.lockedOut) {
+        setPinModalError(`Too many wrong PINs. Try again in ${formatPinWait(result.retryAfterSeconds)}.`)
+      } else if (result.retryAfterSeconds > 0) {
+        setPinModalError(
+          `That PIN is not correct. Too many wrong tries — wait ${formatPinWait(result.retryAfterSeconds)} before trying again.`,
+        )
+      } else {
+        setPinModalError('That PIN is not correct.')
+      }
       return
     }
     const expiresAt = Date.now() + SESSION_MS

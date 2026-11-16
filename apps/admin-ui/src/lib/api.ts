@@ -66,15 +66,61 @@ export async function fetchDailyLimits(deviceId: string): Promise<DailyLimitRow[
   return parseJson<DailyLimitRow[]>(res)
 }
 
-export async function verifyPin(pin: string): Promise<boolean> {
+/**
+ * `retryAfterSeconds` > 0 means the next PIN attempt is refused until that many seconds pass
+ * (the service escalates the wait after repeated wrong PINs).
+ */
+export type PinVerifyResult =
+  | { ok: true }
+  | { ok: false; lockedOut: boolean; retryAfterSeconds: number }
+
+export async function verifyPin(pin: string): Promise<PinVerifyResult> {
   const res = await fetch(apiUrl('/api/admin/pin/verify'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ pin }),
   })
-  if (!res.ok) return false
-  const data = await parseJson<{ valid: boolean }>(res)
-  return data.valid === true
+  if (res.status === 429) {
+    const data = await parseJson<{ retryAfterSeconds?: number }>(res).catch(() => undefined)
+    return { ok: false, lockedOut: true, retryAfterSeconds: data?.retryAfterSeconds ?? 60 }
+  }
+  if (!res.ok) return { ok: false, lockedOut: false, retryAfterSeconds: 0 }
+  const data = await parseJson<{ valid: boolean; retryAfterSeconds?: number }>(res)
+  if (data.valid === true) return { ok: true }
+  return { ok: false, lockedOut: false, retryAfterSeconds: data.retryAfterSeconds ?? 0 }
+}
+
+/** "45 seconds", "3 minutes", "2 hours 15 minutes". */
+export function formatPinWait(seconds: number): string {
+  const s = Math.max(1, Math.ceil(seconds))
+  if (s < 60) return `${s} second${s === 1 ? '' : 's'}`
+  const totalMinutes = Math.ceil(s / 60)
+  const h = Math.floor(totalMinutes / 60)
+  const m = totalMinutes % 60
+  const hPart = h > 0 ? `${h} hour${h === 1 ? '' : 's'}` : ''
+  const mPart = m > 0 ? `${m} minute${m === 1 ? '' : 's'}` : ''
+  return [hPart, mPart].filter(Boolean).join(' ')
+}
+
+/**
+ * User-facing message for a PIN rejection from any PIN-protected call (401 wrong PIN, 429 locked out),
+ * or null when the error is not PIN related.
+ */
+export function pinErrorMessage(e: unknown): string | null {
+  if (!(e instanceof ApiError) || (e.status !== 401 && e.status !== 429)) return null
+  let wait = 0
+  try {
+    const body = typeof e.body === 'string' ? (JSON.parse(e.body) as { retryAfterSeconds?: number }) : null
+    wait = body?.retryAfterSeconds ?? 0
+  } catch {
+    // Non-JSON body: no wait information.
+  }
+  if (e.status === 429) {
+    return `Too many wrong PINs. Try again in ${formatPinWait(wait || 60)}.`
+  }
+  return wait > 0
+    ? `That PIN is not correct. Too many wrong tries — wait ${formatPinWait(wait)} before trying again.`
+    : 'That PIN is not correct.'
 }
 
 export async function setupPin(pin: string): Promise<void> {

@@ -292,11 +292,14 @@ public static class AdminManagementEndpoints
     {
         if (string.IsNullOrWhiteSpace(pin))
             return Results.BadRequest(new { error = "pin_required" });
-        if (!await pins.IsConfiguredAsync(ct))
-            return Results.Conflict(new { error = "pin_not_configured" });
-        if (!await pins.VerifyAsync(pin, ct))
-            return Results.Unauthorized();
-        return null;
+        var check = await pins.CheckAsync(pin, ct);
+        return check.Status switch
+        {
+            PinCheckStatus.Ok => null,
+            PinCheckStatus.NotConfigured => Results.Conflict(new { error = "pin_not_configured" }),
+            PinCheckStatus.LockedOut => PinResults.LockedOut(check.RetryAfter),
+            _ => PinResults.Invalid(check.RetryAfter),
+        };
     }
 
     private static bool IsPlausibleRule(string pattern, string patternType)

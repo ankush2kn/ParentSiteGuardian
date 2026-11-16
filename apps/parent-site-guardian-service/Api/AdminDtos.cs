@@ -13,6 +13,9 @@ public sealed class PinVerifyRequest
 public sealed class PinVerifyResponse
 {
     public bool Valid { get; set; }
+
+    /// <summary>Seconds until the next attempt is accepted when this wrong PIN started a lockout; otherwise 0.</summary>
+    public int RetryAfterSeconds { get; set; }
 }
 
 public sealed class PinStatusResponse
