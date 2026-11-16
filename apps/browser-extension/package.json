@@ -12,9 +12,9 @@
     "test:e2e:install-browsers": "playwright install chromium"
   },
   "devDependencies": {
-    "@playwright/test": "^1.51.0",
-    "@types/chrome": "^0.0.287",
-    "esbuild": "^0.25.0",
-    "typescript": "~5.7.0"
+    "@playwright/test": "^1.65.1",
+    "@types/chrome": "^0.3.7",
+    "esbuild": "^0.28.2",
+    "typescript": "~6.0.3"
   }
 }
